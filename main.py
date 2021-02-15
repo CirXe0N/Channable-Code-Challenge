@@ -45,8 +45,15 @@ class ProductDiffer(ProductStreamProcessor):
         # Determine the UPDATE and CREATE operations.
         for product_id, data in products.items():
             existing_product = existing_products.pop(product_id, None)
-            operation_type = Operation.UPDATE if existing_product else Operation.CREATE
-            yield operation_type, product_id, data
+
+            if existing_product and existing_product != data:
+                yield Operation.UPDATE, product_id, data
+
+            elif not existing_product:
+                yield Operation.CREATE, product_id, data
+
+            else:
+                continue
 
         # Determine the DELETE operations.
         for product_id, data in existing_products.items():
